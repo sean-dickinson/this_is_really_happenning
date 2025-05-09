@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_03_225339) do
+ActiveRecord::Schema[8.0].define(version: 2025_05_03_233355) do
   create_table "account_user", primary_key: ["account_id", "user_id"], force: :cascade do |t|
     t.integer "account_id"
     t.integer "user_id"
@@ -24,6 +24,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_03_225339) do
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "projects", force: :cascade do |t|
+    t.string "name"
+    t.integer "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_projects_on_account_id"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -43,5 +51,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_03_225339) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "projects", "accounts"
   add_foreign_key "sessions", "users"
 end
