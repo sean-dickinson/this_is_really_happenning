@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :project do
     sequence(:name) { |n| "Project #{n}" }
-    account { association(:account) }
+    owners { [association(:user)] }
   end
 end
