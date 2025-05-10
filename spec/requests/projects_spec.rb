@@ -1,172 +1,210 @@
 require "rails_helper"
 RSpec.describe "/projects", type: :request do
-  context "when the user does not belong to the account" do
-    it "does not allow access to the projects" do
-      project = create(:project)
+  context "when the user does not have access to the project" do
+    it "cannot view the project" do
+      project = create(:valid_project)
       user = create(:user)
-      expect(user.accounts).not_to include(project.account)
+      expect(project.users).not_to include(user)
       sign_in_as user
 
-      # Index
-      get account_projects_url(project.account)
+      get project_url(project)
       expect(response).to have_http_status(:not_found)
+    end
 
-      # Show
-      get account_project_url(project.account, project)
+    it "cannot view the edit page for the project" do
+      project = create(:valid_project)
+      user = create(:user)
+      expect(project.users).not_to include(user)
+      sign_in_as user
+
+      get edit_project_url(project)
       expect(response).to have_http_status(:not_found)
+    end
 
-      # New
-      get new_account_project_url(project.account)
+    it "cannot update the project" do
+      project = create(:valid_project)
+      user = create(:user)
+      expect(project.users).not_to include(user)
+      sign_in_as user
+
+      patch project_url(project), params: {project: {name: "Updated Project"}}
       expect(response).to have_http_status(:not_found)
+    end
 
-      # Edit
+    it "cannot destroy the project" do
+      project = create(:valid_project)
+      user = create(:user)
+      expect(project.users).not_to include(user)
+      sign_in_as user
 
-      get edit_account_project_url(project.account, project)
-      expect(response).to have_http_status(:not_found)
-
-      # Create
-      post account_projects_url(project.account), params: {project: {name: "New Project"}}
-      expect(response).to have_http_status(:not_found)
-
-      # Update
-      patch account_project_url(project.account, project), params: {project: {name: "Updated Project"}}
-      expect(response).to have_http_status(:not_found)
-
-      # Destroy
-      delete account_project_url(project.account, project)
+      delete project_url(project)
       expect(response).to have_http_status(:not_found)
     end
   end
-  context "when the user belongs to the account" do
-    describe "GET /index" do
-      it "renders all the account's projects" do
-        account = create(:account)
-        user = create(:user, accounts: [account])
-        projects = create_list(:project, 3, account: account)
+  describe "GET /index" do
+    it "renders all the user's projects" do
+      user = create(:user, :with_projects)
+      projects = user.projects
+      sign_in_as user
+
+      get projects_url
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include(*projects.map(&:name))
+    end
+  end
+
+  describe "GET /show" do
+    it "renders a successful response" do
+      user = create(:user, :with_projects)
+      project = user.projects.first
+
+      sign_in_as user
+      get project_url(project)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include project.name
+    end
+  end
+
+  describe "GET /new" do
+    it "renders a successful response" do
+      user = create(:user)
+      sign_in_as user
+
+      get new_project_url
+
+      expect(response).to be_successful
+    end
+  end
+
+  describe "GET /edit" do
+    it "renders a successful response" do
+      user = create(:user, :with_projects)
+      project = user.projects.first
+      sign_in_as user
+
+      get edit_project_url(project)
+
+      expect(response).to be_successful
+    end
+
+    it "does not render a successful response if the user is not an owner" do
+      user = create(:user, :with_projects, role: :member)
+      project = user.projects.first
+      sign_in_as user
+
+      get edit_project_url(project)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "POST /create" do
+    context "with valid parameters" do
+      it "creates a new Project" do
+        user = create(:user)
         sign_in_as user
-
-        get account_projects_url(account: account)
-
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include projects.map(&:name)
-      end
-    end
-
-    describe "GET /show" do
-      it "renders a successful response" do
-        project = create(:project)
-        user = create(:user, accounts: [project.account])
-
-        sign_in_as user
-        get account_project_url(project, account: project.account)
-
-        expect(response).to have_http_status(:ok)
-        expect(response.body).to include project.name
-      end
-    end
-
-    describe "GET /new" do
-      it "renders a successful response" do
-        project = create(:project)
-        user = create(:user, accounts: [project.account])
-        sign_in_as user
-
-        get new_account_project_url(account: project.account)
-
-        expect(response).to be_successful
-      end
-    end
-
-    describe "GET /edit" do
-      it "renders a successful response" do
-        project = create(:project)
-        user = create(:user, accounts: [project.account])
-        sign_in_as user
-
-        get edit_account_project_url(project, account: project.account)
-
-        expect(response).to be_successful
-      end
-    end
-
-    describe "POST /create" do
-      context "with valid parameters" do
-        it "creates a new Project" do
-          user = create(:user)
-          sign_in_as user
-          valid_attributes = {name: "New Project"}
-
-          expect {
-            post account_projects_url(account: user.accounts.first), params: {project: valid_attributes}
-          }.to change(Project, :count).by(1)
-
-          expect(response).to redirect_to account_project_url(Project.last, account: user.accounts.first)
-        end
-      end
-
-      context "with invalid parameters" do
-        it "does not create a new Project" do
-          user = create(:user)
-          sign_in_as user
-          invalid_attributes = {name: ""}
-
-          expect {
-            post account_projects_url(account: user.accounts.first), params: {project: invalid_attributes}
-          }.not_to change(Project, :count)
-          expect(response).to have_http_status(:unprocessable_entity)
-        end
-      end
-    end
-
-    describe "PATCH /update" do
-      context "with valid parameters" do
-        it "updates the requested project" do
-          project = create(:project)
-          user = create(:user, accounts: [project.account])
-
-          sign_in_as user
-
-          valid_attributes = {name: "Updated Project"}
-
-          patch account_project_url(project, account: project.account), params: {project: valid_attributes}
-
-          project.reload
-          expect(project.name).to eq("Updated Project")
-
-          expect(response).to redirect_to account_project_url(project, account: project.account)
-        end
-      end
-
-      context "with invalid parameters" do
-        it "renders a response with 422 status (i.e. to display the 'edit' template)" do
-          project = create(:project)
-          user = create(:user, accounts: [project.account])
-          sign_in_as user
-
-          invalid_attributes = {name: ""}
-
-          patch account_project_url(project, account: project.account), params: {project: invalid_attributes}
-
-          project.reload
-          expect(project.name).not_to eq("")
-
-          expect(response).to have_http_status(:unprocessable_entity)
-        end
-      end
-    end
-
-    describe "DELETE /destroy" do
-      it "destroys the requested project" do
-        project = create(:project)
-        user = create(:user, accounts: [project.account])
-
-        sign_in_as user
+        valid_attributes = {name: "New Project"}
 
         expect {
-          delete account_project_url(project, account: project.account)
-        }.to change(Project, :count).by(-1)
-        expect(response).to redirect_to account_projects_url(account: project.account)
+          post projects_url, params: {project: valid_attributes}
+        }.to change(Project, :count).by(1)
+
+        expect(response).to redirect_to project_url(Project.last)
       end
+    end
+
+    context "with invalid parameters" do
+      it "does not create a new Project" do
+        user = create(:user)
+        sign_in_as user
+        invalid_attributes = {name: ""}
+
+        expect {
+          post projects_url, params: {project: invalid_attributes}
+        }.not_to change(Project, :count)
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
+
+  describe "PATCH /update" do
+    it "does not update the project if the user is not an owner" do
+      user = create(:user, :with_projects, role: :member)
+      project = user.projects.first
+
+      sign_in_as user
+
+      invalid_attributes = {name: "Updated Project"}
+
+      patch project_url(project), params: {project: invalid_attributes}
+
+      project.reload
+      expect(project.name).not_to eq("Updated Project")
+
+      expect(response).to have_http_status(:unprocessable_entity)
+    end
+
+    context "with valid parameters" do
+      it "updates the requested project" do
+        user = create(:user, :with_projects)
+        project = user.projects.first
+
+        sign_in_as user
+
+        valid_attributes = {name: "Updated Project"}
+
+        patch project_url(project), params: {project: valid_attributes}
+
+        project.reload
+        expect(project.name).to eq("Updated Project")
+
+        expect(response).to redirect_to project_url(project)
+      end
+    end
+
+    context "with invalid parameters" do
+      it "renders a response with 422 status (i.e. to display the 'edit' template)" do
+        user = create(:user, :with_projects)
+        project = user.projects.first
+        sign_in_as user
+
+        invalid_attributes = {name: ""}
+
+        patch project_url(project), params: {project: invalid_attributes}
+
+        project.reload
+        expect(project.name).not_to eq("")
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
+    end
+  end
+
+  describe "DELETE /destroy" do
+    it "destroys the requested project" do
+      user = create(:user, :with_projects)
+      project = user.projects.first
+
+      sign_in_as user
+
+      expect {
+        delete project_url(project)
+      }.to change(Project, :count).by(-1)
+      expect(response).to redirect_to projects_url
+    end
+
+    it "does not destroy the project if the user is not an owner" do
+      user = create(:user, :with_projects, role: :member)
+      project = user.projects.first
+
+      sign_in_as user
+
+      expect {
+        delete project_url(project)
+      }.not_to change(Project, :count)
+      expect(response).to have_http_status(:unprocessable_entity)
     end
   end
 end
