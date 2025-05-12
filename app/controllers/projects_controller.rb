@@ -1,5 +1,6 @@
 class ProjectsController < ApplicationController
   before_action :set_project, only: %i[show edit update destroy]
+  before_action :require_ownership!, only: %i[edit update destroy]
 
   def index
     @projects = user_projects
@@ -55,6 +56,12 @@ class ProjectsController < ApplicationController
 
   def user_projects
     Current.user.projects
+  end
+
+  def require_ownership!
+    unless @project.project_users.exists?(user: Current.user, role: :owner)
+      redirect_back fallback_location: projects_path, alert: "You are not authorized to perform this action."
+    end
   end
 
   def set_project

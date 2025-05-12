@@ -90,13 +90,15 @@ RSpec.describe "/projects", type: :request do
     end
 
     it "does not render a successful response if the user is not an owner" do
-      user = create(:user, :with_projects, role: :member)
-      project = user.projects.first
+      project = create(:valid_project)
+      user = create(:user)
+      create(:project_user, user:, project:, role: :member)
+
       sign_in_as user
 
       get edit_project_url(project)
 
-      expect(response).to have_http_status(:not_found)
+      expect(response).to redirect_to projects_url
     end
   end
 
@@ -131,8 +133,9 @@ RSpec.describe "/projects", type: :request do
 
   describe "PATCH /update" do
     it "does not update the project if the user is not an owner" do
-      user = create(:user, :with_projects, role: :member)
-      project = user.projects.first
+      project = create(:valid_project)
+      user = create(:user)
+      create(:project_user, user:, project:, role: :member)
 
       sign_in_as user
 
@@ -143,7 +146,7 @@ RSpec.describe "/projects", type: :request do
       project.reload
       expect(project.name).not_to eq("Updated Project")
 
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to redirect_to projects_url
     end
 
     context "with valid parameters" do
@@ -196,15 +199,16 @@ RSpec.describe "/projects", type: :request do
     end
 
     it "does not destroy the project if the user is not an owner" do
-      user = create(:user, :with_projects, role: :member)
-      project = user.projects.first
+      project = create(:valid_project)
+      user = create(:user)
+      create(:project_user, user:, project:, role: :member)
 
       sign_in_as user
 
       expect {
         delete project_url(project)
       }.not_to change(Project, :count)
-      expect(response).to have_http_status(:unprocessable_entity)
+      expect(response).to redirect_to projects_url
     end
   end
 end
