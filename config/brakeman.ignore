@@ -1,0 +1,39 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
+      "fingerprint": "e2775a55af92ddc8023cdd53cbf9ed807519aef08bc777ed3f8f252c2fadd9b8",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/projects/show.html.erb",
+      "line": 3,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => user_projects.find(params.expect(:id)), {})",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "ProjectsController",
+          "method": "show",
+          "line": 10,
+          "file": "app/controllers/projects_controller.rb",
+          "rendered": {
+            "name": "projects/show",
+            "file": "app/views/projects/show.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "projects/show"
+      },
+      "user_input": "params.expect(:id)",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": ""
+    }
+  ],
+  "brakeman_version": "7.0.2"
+}

@@ -10,17 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_05_03_225339) do
-  create_table "account_user", primary_key: ["account_id", "user_id"], force: :cascade do |t|
-    t.integer "account_id"
-    t.integer "user_id"
+ActiveRecord::Schema[8.0].define(version: 2025_05_03_233355) do
+  create_table "project_users", primary_key: ["user_id", "project_id"], force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "project_id", null: false
+    t.string "role"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_account_user_on_account_id"
-    t.index ["user_id"], name: "index_account_user_on_user_id"
+    t.index ["project_id"], name: "index_project_users_on_project_id"
+    t.index ["user_id"], name: "index_project_users_on_user_id"
   end
 
-  create_table "accounts", force: :cascade do |t|
+  create_table "projects", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -43,5 +44,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_03_225339) do
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "project_users", "projects"
+  add_foreign_key "project_users", "users"
   add_foreign_key "sessions", "users"
 end
