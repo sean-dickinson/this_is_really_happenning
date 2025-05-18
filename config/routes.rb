@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
+  resources :check_ins, only: :create, format: :json, path: "check_ins/:uuid", controller: "api/check_ins"
   resources :projects do
-    resources :tasks
+    resources :tasks do
+      resources :check_ins, only: :index
+    end
   end
   resource :session
   resources :passwords, param: :token
