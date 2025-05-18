@@ -1,0 +1,16 @@
+<p style="color: green"><%= notice %></p>
+
+<% content_for :title, "Tasks" %>
+
+<h1>Tasks for <%= @project.name %></h1>
+
+<div id="tasks">
+  <% @project.tasks.each do |task| %>
+    <%= render task %>
+    <p>
+      <%= link_to "Show this task", project_task_path(@project, task) %>
+    </p>
+  <% end %>
+</div>
+
+<%= link_to "New task", new_project_task_path(@project) %>
