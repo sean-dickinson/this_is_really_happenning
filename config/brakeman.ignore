@@ -3,6 +3,40 @@
     {
       "warning_type": "Dynamic Render Path",
       "warning_code": 15,
+      "fingerprint": "3d2f9041f0368e58ee9420f811f50c668ab65a35133da97a42cfb43a7a0d858e",
+      "check_name": "Render",
+      "message": "Render path contains parameter value",
+      "file": "app/views/tasks/show.html.erb",
+      "line": 3,
+      "link": "https://brakemanscanner.org/docs/warning_types/dynamic_render_path/",
+      "code": "render(action => user_projects.includes(:tasks).find(params.expect(:project_id)).tasks.find(params.expect(:id)), {})",
+      "render_path": [
+        {
+          "type": "controller",
+          "class": "TasksController",
+          "method": "show",
+          "line": 12,
+          "file": "app/controllers/tasks_controller.rb",
+          "rendered": {
+            "name": "tasks/show",
+            "file": "app/views/tasks/show.html.erb"
+          }
+        }
+      ],
+      "location": {
+        "type": "template",
+        "template": "tasks/show"
+      },
+      "user_input": "params.expect(:id)",
+      "confidence": "Weak",
+      "cwe_id": [
+        22
+      ],
+      "note": ""
+    },
+    {
+      "warning_type": "Dynamic Render Path",
+      "warning_code": 15,
       "fingerprint": "e2775a55af92ddc8023cdd53cbf9ed807519aef08bc777ed3f8f252c2fadd9b8",
       "check_name": "Render",
       "message": "Render path contains parameter value",
