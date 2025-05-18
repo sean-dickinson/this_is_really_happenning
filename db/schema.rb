@@ -40,7 +40,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_05_17_180116) do
     t.string "name"
     t.text "description"
     t.integer "project_id", null: false
-    t.boolean "is_active"
+    t.boolean "is_active", default: false, null: false
+    t.integer "schedule", null: false
+    t.string "uuid", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["project_id"], name: "index_tasks_on_project_id"
