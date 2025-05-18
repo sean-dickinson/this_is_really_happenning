@@ -91,6 +91,8 @@ RSpec.describe "/projects/:project_id/tasks", type: :request do
       get project_task_url(task.project, task)
 
       expect(response).to be_successful
+      # We should see the task name on the page
+      expect(response.body).to match task.name
     end
   end
 
@@ -128,7 +130,7 @@ RSpec.describe "/projects/:project_id/tasks", type: :request do
         valid_attributes = {
           name: "New Task",
           description: "Task description",
-          is_active: true
+          schedule: "daily"
         }
         expect {
           post project_tasks_url(project), params: {task: valid_attributes}
