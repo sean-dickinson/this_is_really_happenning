@@ -22,8 +22,8 @@
   </div>
 
   <div>
-    <%= form.label :is_active, style: "display: block" %>
-    <%= form.checkbox :is_active %>
+    <%= form.label :schedule, style: "display: block" %>
+    <%= form.select :schedule, Task.schedules.keys.map { [it.titleize, it]} %>
   </div>
 
   <div>
